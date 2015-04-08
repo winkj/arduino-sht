@@ -53,7 +53,7 @@ float ShtBase::getTemperature() const
 {
   return mTemperature;
 }
-  
+
 bool ShtBase::readSample()
 {
   uint8_t data[EXPECTED_DATA_SIZE];
@@ -66,15 +66,40 @@ bool ShtBase::readSample()
     return false;
   }
   
-  // Important: this is assuming 2-byte data, 1-byte
+  // -- Important: this is assuming 2-byte data, 1-byte
+
+  // check CRC for both RH and T
+  if (crc8(data+0, 2) != data[2] || crc8(data+3, 2) != data[5]) {
+    return false;
+  }
+
+  // convert to Temperature/Humidity
   uint16_t val;
   val = (data[0] << 8) + data[1];
   mTemperature = mA + mB * (val / mC);
-  // TODO: verify CRC: data[2]
   
   val = (data[3] << 8) + data[4];
   mHumidity = mX * (val / mY);
-  // TODO: verify CRC: data[5]
   
   return true;
+}
+
+
+uint8_t ShtBase::crc8(const uint8_t* data, uint8_t len)
+{
+  // adapted from SHT21 sample code from http://www.sensirion.com/en/products/humidity-temperature/download-center/
+
+  uint8_t crc = 0xff;
+  uint8_t byteCtr;
+  for (byteCtr = 0; byteCtr < len; ++byteCtr) {
+    crc ^= (data[byteCtr]);
+    for (uint8_t bit = 8; bit > 0; --bit) {
+      if (crc & 0x80) {
+        crc = (crc << 1) ^ 0x31;
+      } else {
+        crc = (crc << 1);
+      }
+    }
+  }
+  return crc;
 }

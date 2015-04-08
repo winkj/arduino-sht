@@ -57,6 +57,9 @@ protected:
   uint16_t mI2CCommand;
 
 private:
+  static uint8_t crc8(const uint8_t* data, uint8_t len);
+
+
   float mHumidity;
   float mTemperature;
 
