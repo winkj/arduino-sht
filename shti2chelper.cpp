@@ -38,11 +38,11 @@ bool ShtI2CHelper::readFromI2C(uint8_t i2cAddress, const uint8_t* i2cCommand, ui
       return false;
     }
   }  
-  if (Wire.endTransmission(false) != 0) {
+  if (Wire.endTransmission() != 0) {
     Serial.println("NACK");
     return false;
   }
-
+  delay(20);
   Wire.requestFrom(i2cAddress, dataLength);
 
   // there should be no reason for this to not be ready, since we're using clock stretching mode,
