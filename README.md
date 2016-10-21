@@ -2,7 +2,7 @@
 Unofficial repository for Sensirion Humidity and temperature sensor support on Arduino
 
 ## Supported sensors:
-- SHTC1
+- SHTC1 (and SHTW1/SHTW2, using the SHTC1 driver)
 - SHT3x-DIS (I2C)
 - SHT3x-ARP (ratiometric analog voltage output)
 
