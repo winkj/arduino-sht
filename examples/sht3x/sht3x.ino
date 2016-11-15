@@ -9,15 +9,15 @@ void setup() {
 
   sht3x.setAddress(SHT3X::I2C_ADDRESS_45);
   sht3x.setAccuracy(SHT3X::ACCURACY_MEDIUM);
-  Wire.begin();  
+  Wire.begin();
   Serial.begin(9600);
-  
+
   delay(1000); // let serial console settle
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-    
+
   sht3x.readSample();
   Serial.print("SHT3x:\n");
   Serial.print("  RH: ");

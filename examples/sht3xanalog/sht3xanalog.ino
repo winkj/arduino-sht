@@ -7,9 +7,9 @@ SHT3XAnalog sht3xAnalog(A0, A1);
 void setup() {
   // put your setup code here, to run once:
 
-  Wire.begin();  
+  Wire.begin();
   Serial.begin(9600);
-  
+
   delay(1000); // let serial console settle
 }
 

@@ -1,5 +1,5 @@
 # arduino-sht
-Unofficial repository for Sensirion Humidity and temperature sensor support on Arduino
+Repository for Sensirion Humidity and temperature sensor support on Arduino
 
 ## Supported sensors:
 - SHTC1 (and SHTW1/SHTW2, using the SHTC1 driver)
@@ -8,21 +8,31 @@ Unofficial repository for Sensirion Humidity and temperature sensor support on A
 
 ## Installation
 
-Download arduino-sht either via git or from the releases page and place it in the Arduino/libraries directory. After restarting the Arduino IDE, you will get menu items under libraries and examples.
+Download arduino-sht either via git or from the releases page and place it in
+the Arduino/libraries directory. After restarting the Arduino IDE, you will get
+menu items under libraries and examples.
 
 ## Integrating it into your sketch (Example for SHTC1)
 
-Assuming you installed the library as described above, the following steps are necessary:
+Assuming you installed the library as described above, the following steps are
+necessary:
 
-1. Import the Wire library like this: From the menu bar, select Sketch > Import Library > Wire
-1. Import the arduino-sht library like this: From the menu bar, select Sketch > Import Library > arduino-sht
+1. Import the Wire library like this: From the menu bar, select Sketch > Import
+   Library > Wire
+1. Import the arduino-sht library like this: From the menu bar, select Sketch >
+   Import Library > arduino-sht
 1. Create an instance of the `SHTC1` class
 2. In `setup()`, make sure to init the Wire library with `Wire.init()`
-3. If you want to use the serial console, remember to initialize the Serial library with `Serial.begin(9600)`
-1. Call `shtc1.readSample()` in the `loop()` function, which reads a temperature & humidity sample from the sensor
-2. Use `shtc1.getHumidity()` and `shtc1.getTemperature()` to get the values form the last sample
+3. If you want to use the serial console, remember to initialize the Serial
+   library with `Serial.begin(9600)`
+1. Call `shtc1.readSample()` in the `loop()` function, which reads a temperature
+   and humidity sample from the sensor
+2. Use `shtc1.getHumidity()` and `shtc1.getTemperature()` to get the values from
+   the last sample
 
-*Important:* `getHumidity()` and `getTemperature()` do *not* read a new sample from the sensor, but return the values read last. To read a new sample, make sure to call `readSample()`
+*Important:* `getHumidity()` and `getTemperature()` do *not* read a new sample
+from the sensor, but return the values read last. To read a new sample, make
+sure to call `readSample()`
 
 ### Sample code
 ```c++
