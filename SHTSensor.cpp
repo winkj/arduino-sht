@@ -1,0 +1,326 @@
+/*
+ *  Copyright (c) 2016, Sensirion AG <andreas.brauchli@sensirion.com>
+ *  Copyright (c) 2015, Johannes Winkelmann <jw@smts.ch>
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *      * Redistributions of source code must retain the above copyright
+ *        notice, this list of conditions and the following disclaimer.
+ *      * Redistributions in binary form must reproduce the above copyright
+ *        notice, this list of conditions and the following disclaimer in the
+ *        documentation and/or other materials provided with the distribution.
+ *      * Neither the name of the <organization> nor the
+ *        names of its contributors may be used to endorse or promote products
+ *        derived from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <inttypes.h>
+#include <Wire.h>
+#include <Arduino.h>
+
+#include "SHTSensor.h"
+
+
+//
+// class SHTSensorDriver
+//
+
+SHTSensorDriver::~SHTSensorDriver()
+{
+}
+
+bool SHTSensorDriver::readSample()
+{
+  return false;
+}
+
+
+//
+// class SHTI2cSensor
+//
+
+const uint8_t SHTI2cSensor::CMD_SIZE            = 2;
+const uint8_t SHTI2cSensor::EXPECTED_DATA_SIZE  = 6;
+const uint8_t SHTI2cSensor::MAX_I2C_READ_TRIES  = 5;
+
+bool SHTI2cSensor::readFromI2c(uint8_t i2cAddress,
+                               const uint8_t *i2cCommand,
+                               uint8_t commandLength, uint8_t *data,
+                               uint8_t dataLength)
+{
+  Wire.beginTransmission(i2cAddress);
+  for (int i = 0; i < commandLength; ++i) {
+    if (Wire.write(i2cCommand[i]) != 1) {
+      return false;
+    }
+  }
+
+  if (Wire.endTransmission(false) != 0) {
+    return false;
+  }
+
+  Wire.requestFrom(i2cAddress, dataLength);
+
+  // there should be no reason for this to not be ready, since we're using clock
+  // stretching mode, but just in case we'll try a few times
+  uint8_t tries = 1;
+  while (Wire.available() < dataLength) {
+    delay(1);
+    if (tries++ >= MAX_I2C_READ_TRIES) {
+      return false;
+    }
+  }
+
+  for (int i = 0; i < dataLength; ++i) {
+    data[i] = Wire.read();
+  }
+  return true;
+}
+
+uint8_t SHTI2cSensor::crc8(const uint8_t *data, uint8_t len)
+{
+  // adapted from SHT21 sample code from
+  // http://www.sensirion.com/en/products/humidity-temperature/download-center/
+
+  uint8_t crc = 0xff;
+  uint8_t byteCtr;
+  for (byteCtr = 0; byteCtr < len; ++byteCtr) {
+    crc ^= data[byteCtr];
+    for (uint8_t bit = 8; bit > 0; --bit) {
+      if (crc & 0x80) {
+        crc = (crc << 1) ^ 0x31;
+      } else {
+        crc = (crc << 1);
+      }
+    }
+  }
+  return crc;
+}
+
+
+bool SHTI2cSensor::readSample()
+{
+  uint8_t data[EXPECTED_DATA_SIZE];
+  uint8_t cmd[CMD_SIZE];
+
+  cmd[0] = mI2cCommand >> 8;
+  cmd[1] = mI2cCommand & 0xff;
+
+  if (!readFromI2c(mI2cAddress, cmd, CMD_SIZE, data,
+                   EXPECTED_DATA_SIZE)) {
+    return false;
+  }
+
+  // -- Important: assuming each 2 byte of data is followed by 1 byte of CRC
+
+  // check CRC for both RH and T
+  if (crc8(&data[0], 2) != data[2] || crc8(&data[3], 2) != data[5]) {
+    return false;
+  }
+
+  // convert to Temperature/Humidity
+  uint16_t val;
+  val = (data[0] << 8) + data[1];
+  mTemperature = mA + mB * (val / mC);
+
+  val = (data[3] << 8) + data[4];
+  mHumidity = mX * (val / mY);
+
+  return true;
+}
+
+
+//
+// class SHTC1Sensor
+//
+
+class SHTC1Sensor : public SHTI2cSensor
+{
+public:
+    SHTC1Sensor()
+        // Using clock stretching, high precision, T first
+        : SHTI2cSensor(0x70, 0x7ca2, -45, 175, 65535, 100, 65535)
+    {
+    }
+};
+
+
+//
+// class SHT3xSensor
+//
+
+class SHT3xSensor : public SHTI2cSensor
+{
+public:
+  static const uint16_t SHT3x_ACCURACY_HIGH    = 0x2c06;
+  static const uint16_t SHT3x_ACCURACY_MEDIUM  = 0x2c0d;
+  static const uint16_t SHT3x_ACCURACY_LOW     = 0x2c10;
+
+  SHT3xSensor()
+      : SHTI2cSensor(SHT3x_I2C_ADDRESS_44, SHT3x_ACCURACY_HIGH,
+                   -45, 175, 65535, 100, 65535)
+  {
+  }
+
+  virtual bool setAccuracy(SHTSensor::SHTAccuracy newAccuracy)
+  {
+    switch (newAccuracy) {
+      case SHTSensor::SHT_ACCURACY_HIGH:
+        mI2cCommand = SHT3x_ACCURACY_HIGH;
+        break;
+      case SHTSensor::SHT_ACCURACY_MEDIUM:
+        mI2cCommand = SHT3x_ACCURACY_MEDIUM;
+        break;
+      case SHTSensor::SHT_ACCURACY_LOW:
+        mI2cCommand = SHT3x_ACCURACY_LOW;
+        break;
+      default:
+        return false;
+    }
+    return true;
+  }
+};
+
+
+//
+// class SHT3xAlt
+//
+
+class SHT3xAltSensor : public SHT3xSensor
+{
+public:
+  SHT3xAltSensor() : SHT3xSensor()
+  {
+    setI2cAddress(SHT3x_I2C_ADDRESS_45);
+  }
+};
+
+
+//
+// class SHT3xAnalogSensor
+//
+
+bool SHT3xAnalogSensor::readSample()
+{
+  readTemperature();
+  readHumidity();
+  return true;
+}
+
+float SHT3xAnalogSensor::readHumidity()
+{
+  float max_adc = (float)((1 << mReadResolutionBits) - 1);
+  mHumidity = -12.5f + 125 * (analogRead(mHumidityAdcPin) / max_adc);
+  return mHumidity;
+}
+
+float SHT3xAnalogSensor::readTemperature()
+{
+  float max_adc = (float)((1 << mReadResolutionBits) - 1);
+  mTemperature = -66.875f + 218.75f *
+      (analogRead(mTemperatureAdcPin) / max_adc);
+  return mTemperature;
+}
+
+
+//
+// class SHTSensor
+//
+
+const SHTSensor::SHTSensorType SHTSensor::AUTO_DETECT_SENSORS[] = {
+  SHT3x,
+  SHT3xAlt,
+  SHTC1
+};
+const float SHTSensor::TEMPERATURE_INVALID = NAN;
+const float SHTSensor::HUMIDITY_INVALID = NAN;
+
+bool SHTSensor::init(SHTSensorDriver *sensor)
+{
+  if (mSensor != NULL) {
+    cleanup();
+  }
+  mOwnSensor = (sensor == NULL);
+  if (sensor) {
+    mSensor = sensor;
+    return true;
+  }
+
+  switch(mSensorType) {
+    case SHT3x:
+        mSensor = new SHT3xSensor();
+        return true;
+
+    case SHT3xAlt:
+        mSensor = new SHT3xAltSensor();
+        return true;
+
+    case SHTW1:
+    case SHTW2:
+    case SHTC1:
+        mSensor = new SHTC1Sensor();
+        break;
+
+    case SHT3xAnalog:
+        // There are no default parameters for the analog sensor.
+        // Driver instatiation must happen explicitly and be passed to init().
+        return false;
+
+    case AutoDetect:
+    {
+      for (int i = 0;
+           i < sizeof(AUTO_DETECT_SENSORS) / sizeof(AUTO_DETECT_SENSORS[0]);
+           ++i) {
+        mSensorType = AUTO_DETECT_SENSORS[i];
+        if (init() && readSample()) {
+          return true;
+        }
+      }
+      // No sensor was auto detected
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
+bool SHTSensor::readSample()
+{
+  if (!mSensor || !mSensor->readSample())
+    return false;
+  mTemperature = mSensor->mTemperature;
+  mHumidity = mSensor->mHumidity;
+}
+
+bool SHTSensor::setAccuracy(SHTAccuracy newAccuracy)
+{
+  if (!mSensor)
+    return false;
+  return mSensor->setAccuracy(newAccuracy);
+}
+
+bool SHTSensor::setI2cAddress(uint8_t newAddress)
+{
+  if (!mSensor)
+    return false;
+  return mSensor->setI2cAddress(newAddress);
+}
+
+void SHTSensor::cleanup()
+{
+  if (mOwnSensor && mSensor) {
+    delete mSensor;
+  }
+}
