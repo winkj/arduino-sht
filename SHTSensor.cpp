@@ -324,5 +324,6 @@ void SHTSensor::cleanup()
 {
   if (mOwnSensor && mSensor) {
     delete mSensor;
+    mSensor = NULL;
   }
 }
