@@ -294,6 +294,7 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
     default:
       return false;
   }
+  return false;
 }
 
 bool SHTSensor::readSample()
@@ -302,6 +303,7 @@ bool SHTSensor::readSample()
     return false;
   mTemperature = mSensor->mTemperature;
   mHumidity = mSensor->mHumidity;
+  return true;
 }
 
 bool SHTSensor::setAccuracy(SHTAccuracy newAccuracy)
