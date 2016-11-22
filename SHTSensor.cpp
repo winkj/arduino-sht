@@ -280,7 +280,7 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
 
     case AUTO_DETECT:
     {
-      for (int i = 0;
+      for (unsigned int i = 0;
            i < sizeof(AUTO_DETECT_SENSORS) / sizeof(AUTO_DETECT_SENSORS[0]);
            ++i) {
         mSensorType = AUTO_DETECT_SENSORS[i];
