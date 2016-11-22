@@ -99,11 +99,11 @@ public:
   SHTSensor(SHTSensorType sensorType = AUTO_DETECT,
             SHTSensorDriver *sensor = NULL,
             bool ownSensor = false)
-      : mTemperature(SHTSensor::TEMPERATURE_INVALID),
-        mHumidity(SHTSensor::HUMIDITY_INVALID),
-        mSensorType(sensorType),
+      : mSensorType(sensorType),
         mSensor(sensor),
-        mOwnSensor(ownSensor)
+        mOwnSensor(ownSensor),
+        mTemperature(SHTSensor::TEMPERATURE_INVALID),
+        mHumidity(SHTSensor::HUMIDITY_INVALID)
   {
   }
 
@@ -160,9 +160,9 @@ public:
 private:
   void cleanup();
 
-  bool mOwnSensor;
-  SHTSensorDriver *mSensor;
   SHTSensorType mSensorType;
+  SHTSensorDriver *mSensor;
+  bool mOwnSensor;
   float mTemperature;
   float mHumidity;
 };
