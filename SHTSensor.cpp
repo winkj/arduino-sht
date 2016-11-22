@@ -261,41 +261,43 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
   switch(mSensorType) {
     case SHT3X:
         mSensor = new SHT3xSensor();
-        return true;
+        break;
 
     case SHT3X_ALT:
         mSensor = new SHT3xAltSensor();
-        return true;
+        break;
 
     case SHTW1:
     case SHTW2:
     case SHTC1:
         mSensor = new SHTC1Sensor();
-        return true;
+        break;
 
     case SHT3X_ANALOG:
         // There are no default parameters for the analog sensor.
         // Driver instatiation must happen explicitly and be passed to init().
-        return false;
+        break;
 
     case AUTO_DETECT:
     {
+      bool detected = false;
       for (unsigned int i = 0;
            i < sizeof(AUTO_DETECT_SENSORS) / sizeof(AUTO_DETECT_SENSORS[0]);
            ++i) {
         mSensorType = AUTO_DETECT_SENSORS[i];
         if (init() && readSample()) {
-          return true;
+          detected = true;
+          break;
         }
       }
       // No sensor was auto detected
-      cleanup();
-      return false;
+      if (!detected) {
+        cleanup();
+      }
+      break;
     }
-    default:
-      return false;
   }
-  return false;
+  return (mSensor != NULL);
 }
 
 bool SHTSensor::readSample()
