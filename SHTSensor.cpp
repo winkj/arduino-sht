@@ -289,6 +289,7 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
         }
       }
       // No sensor was auto detected
+      cleanup();
       return false;
     }
     default:
