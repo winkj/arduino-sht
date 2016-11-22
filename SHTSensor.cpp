@@ -271,7 +271,7 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
     case SHTW2:
     case SHTC1:
         mSensor = new SHTC1Sensor();
-        break;
+        return true;
 
     case SHT3X_ANALOG:
         // There are no default parameters for the analog sensor.
