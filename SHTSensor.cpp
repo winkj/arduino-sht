@@ -275,7 +275,7 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
 
     case SHT3X_ANALOG:
         // There are no default parameters for the analog sensor.
-        // Driver instatiation must happen explicitly and be passed to init().
+        // Driver instantiation must happen explicitly and be passed to init().
         break;
 
     case AUTO_DETECT:
