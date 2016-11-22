@@ -4,7 +4,7 @@
 
 SHTSensor sht;
 // To use a specific sensor instead of probing the bus use this command:
-// SHTSensor sht(SHTSensor::SHT3x);
+// SHTSensor sht(SHTSensor::SHT3X);
 
 void setup() {
   // put your setup code here, to run once:

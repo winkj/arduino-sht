@@ -240,8 +240,8 @@ float SHT3xAnalogSensor::readTemperature()
 //
 
 const SHTSensor::SHTSensorType SHTSensor::AUTO_DETECT_SENSORS[] = {
-  SHT3x,
-  SHT3xAlt,
+  SHT3X,
+  SHT3X_ALT,
   SHTC1
 };
 const float SHTSensor::TEMPERATURE_INVALID = NAN;
@@ -259,11 +259,11 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
   }
 
   switch(mSensorType) {
-    case SHT3x:
+    case SHT3X:
         mSensor = new SHT3xSensor();
         return true;
 
-    case SHT3xAlt:
+    case SHT3X_ALT:
         mSensor = new SHT3xAltSensor();
         return true;
 
@@ -273,12 +273,12 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
         mSensor = new SHTC1Sensor();
         break;
 
-    case SHT3xAnalog:
+    case SHT3X_ANALOG:
         // There are no default parameters for the analog sensor.
         // Driver instatiation must happen explicitly and be passed to init().
         return false;
 
-    case AutoDetect:
+    case AUTO_DETECT:
     {
       for (int i = 0;
            i < sizeof(AUTO_DETECT_SENSORS) / sizeof(AUTO_DETECT_SENSORS[0]);

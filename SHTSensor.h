@@ -47,17 +47,17 @@ public:
    */
   enum SHTSensorType {
     /** Automatically detect the sensor type (only i2c sensors listed above) */
-    AutoDetect,
+    AUTO_DETECT,
     // i2c Sensors:
     /** SHT3x-DIS with ADDR (sensor pin 2) connected to VSS (default) */
-    SHT3x,
+    SHT3X,
     /** SHT3x-DIS with ADDR (sensor pin 2) connected to VDD */
-    SHT3xAlt,
+    SHT3X_ALT,
     SHTC1,
     SHTW1,
     SHTW2,
     // Analog sensors:
-    SHT3xAnalog
+    SHT3X_ANALOG
   };
 
   /**
@@ -96,7 +96,7 @@ public:
    * `ownSensor' describes whether the SHTSensor is responsible for freeing the
    * memory pointed to by `sensor'. This should never need to be set explicitly.
    */
-  SHTSensor(SHTSensorType sensorType = AutoDetect,
+  SHTSensor(SHTSensorType sensorType = AUTO_DETECT,
             SHTSensorDriver *sensor = NULL,
             bool ownSensor = false)
       : mTemperature(SHTSensor::TEMPERATURE_INVALID),
