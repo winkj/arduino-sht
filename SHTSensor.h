@@ -1,6 +1,6 @@
 /*
  *  Copyright (c) 2016, Sensirion AG <andreas.brauchli@sensirion.com>
- *  Copyright (c) 2015, Johannes Winkelmann <jw@smts.ch>
+ *  Copyright (c) 2015-2016, Johannes Winkelmann <jw@smts.ch>
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,9 @@ class SHTSensor
 {
 public:
   /**
-   * Enum of the supported Sensirion SHT Sensors.
-   * Using the special AutoDetect sensor causes all i2c sensors to be
+   * Enum of the supported Digital Sensirion SHT Sensors.
+   * For analog sensors, see SHT3xAnalogSensor.
+   * Using the special AUTO_DETECT sensor causes all i2c sensors to be
    * probed. The first matching sensor will then be used.
    */
   enum SHTSensorType {
@@ -55,9 +56,7 @@ public:
     SHT3X_ALT,
     SHTC1,
     SHTW1,
-    SHTW2,
-    // Analog sensors:
-    SHT3X_ANALOG
+    SHTW2
   };
 
   /**
@@ -88,20 +87,10 @@ public:
    * Instantiate a new SHTSensor
    * By default, the i2c bus is queried for known SHT Sensors. To address
    * a specific sensor, set the `sensorType'.
-   *
-   * Some sensor drivers require a specific parameter set and cannot be
-   * auto-detected. Those must be instantiated separately and be passed to
-   * `sensor'. In any other case sensor must be NULL.
-   *
-   * `ownSensor' describes whether the SHTSensor is responsible for freeing the
-   * memory pointed to by `sensor'. This should never need to be set explicitly.
    */
-  SHTSensor(SHTSensorType sensorType = AUTO_DETECT,
-            SHTSensorDriver *sensor = NULL,
-            bool ownSensor = false)
+  SHTSensor(SHTSensorType sensorType = AUTO_DETECT)
       : mSensorType(sensorType),
-        mSensor(sensor),
-        mOwnSensor(ownSensor),
+        mSensor(NULL),
         mTemperature(SHTSensor::TEMPERATURE_INVALID),
         mHumidity(SHTSensor::HUMIDITY_INVALID)
   {
@@ -112,11 +101,11 @@ public:
   }
 
   /**
-   * Initialize a new Temperature and Humidity sensor driver
-   * To read out the sensor use readSample(), then use getTemperature() and
+   * Initialize the sensor driver
+   * To read out the sensor use readSample(), followed by getTemperature() and
    * getHumidity() to retrieve the values from the sample
    */
-  bool init(SHTSensorDriver *driver = NULL);
+  bool init();
 
   /**
    * Read new values from the sensor
@@ -162,7 +151,6 @@ private:
 
   SHTSensorType mSensorType;
   SHTSensorDriver *mSensor;
-  bool mOwnSensor;
   float mTemperature;
   float mHumidity;
 };
@@ -171,7 +159,7 @@ private:
 const uint8_t SHT3x_I2C_ADDRESS_44 = 0x44;
 const uint8_t SHT3x_I2C_ADDRESS_45 = 0x45;
 
-/** Abstract class for an SHT Sensor driver */
+/** Abstract class for a digital SHT Sensor driver */
 class SHTSensorDriver
 {
 public:
@@ -271,7 +259,7 @@ private:
                           uint8_t dataLength);
 };
 
-class SHT3xAnalogSensor : public SHTSensorDriver
+class SHT3xAnalogSensor
 {
 public:
 
@@ -281,19 +269,11 @@ public:
    * An optional `readResolutionBits' can be set since the Arduino/Genuino Zero
    * support 12bit precision analog readings. By default, 10 bit precision is
    * used.
-   * The analog instance can then (a) be used directly or (b) be passed to the
-   * SHTDriver instance for transparent usage accross SHT drivers:
    *
-   * Example (a):
+   * Example usage:
    * SHT3xAnalogSensor sht3xAnalog(HUMIDITY_PIN, TEMPERATURE_PIN);
    * float humidity = sht.readHumidity();
-   *
-   * Example (b):
-   * SHT3xAnalogSensor shtDriver(HUMIDITY_PIN, TEMPERATURE_PIN);
-   * SHTDriver sht(SHTDriver::SHT3xAnalog);
-   * sht.init(&shtDriver)
-   * sht.readSample();
-   * float temperature = sht.getTemperature();
+   * float temperature = sht.readTemperature();
    */
   SHT3xAnalogSensor(uint8_t humidityPin, uint8_t temperaturePin,
                     uint8_t readResolutionBits = 10)
@@ -305,8 +285,6 @@ public:
   virtual ~SHT3xAnalogSensor()
   {
   }
-
-  virtual bool readSample();
 
   float readHumidity();
   float readTemperature();

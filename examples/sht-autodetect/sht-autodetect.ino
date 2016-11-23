@@ -26,7 +26,7 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   if (sht.readSample()) {
-      Serial.print("SHT:");
+      Serial.print("SHT:\n");
       Serial.print("  RH: ");
       Serial.print(sht.getHumidity(), 2);
       Serial.print("\n");

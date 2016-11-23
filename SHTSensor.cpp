@@ -1,6 +1,6 @@
 /*
  *  Copyright (c) 2016, Sensirion AG <andreas.brauchli@sensirion.com>
- *  Copyright (c) 2015, Johannes Winkelmann <jw@smts.ch>
+ *  Copyright (c) 2015-2016, Johannes Winkelmann <jw@smts.ch>
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -170,7 +170,7 @@ public:
 
   SHT3xSensor()
       : SHTI2cSensor(SHT3x_I2C_ADDRESS_44, SHT3x_ACCURACY_HIGH,
-                   -45, 175, 65535, 100, 65535)
+                     -45, 175, 65535, 100, 65535)
   {
   }
 
@@ -212,26 +212,16 @@ public:
 // class SHT3xAnalogSensor
 //
 
-bool SHT3xAnalogSensor::readSample()
-{
-  readTemperature();
-  readHumidity();
-  return true;
-}
-
 float SHT3xAnalogSensor::readHumidity()
 {
   float max_adc = (float)((1 << mReadResolutionBits) - 1);
-  mHumidity = -12.5f + 125 * (analogRead(mHumidityAdcPin) / max_adc);
-  return mHumidity;
+  return -12.5f + 125 * (analogRead(mHumidityAdcPin) / max_adc);
 }
 
 float SHT3xAnalogSensor::readTemperature()
 {
   float max_adc = (float)((1 << mReadResolutionBits) - 1);
-  mTemperature = -66.875f + 218.75f *
-      (analogRead(mTemperatureAdcPin) / max_adc);
-  return mTemperature;
+  return -66.875f + 218.75f * (analogRead(mTemperatureAdcPin) / max_adc);
 }
 
 
@@ -247,36 +237,26 @@ const SHTSensor::SHTSensorType SHTSensor::AUTO_DETECT_SENSORS[] = {
 const float SHTSensor::TEMPERATURE_INVALID = NAN;
 const float SHTSensor::HUMIDITY_INVALID = NAN;
 
-bool SHTSensor::init(SHTSensorDriver *sensor)
+bool SHTSensor::init()
 {
   if (mSensor != NULL) {
     cleanup();
   }
-  mOwnSensor = (sensor == NULL);
-  if (sensor) {
-    mSensor = sensor;
-    return true;
-  }
 
   switch(mSensorType) {
     case SHT3X:
-        mSensor = new SHT3xSensor();
-        break;
+      mSensor = new SHT3xSensor();
+      break;
 
     case SHT3X_ALT:
-        mSensor = new SHT3xAltSensor();
-        break;
+      mSensor = new SHT3xAltSensor();
+      break;
 
     case SHTW1:
     case SHTW2:
     case SHTC1:
-        mSensor = new SHTC1Sensor();
-        break;
-
-    case SHT3X_ANALOG:
-        // There are no default parameters for the analog sensor.
-        // Driver instantiation must happen explicitly and be passed to init().
-        break;
+      mSensor = new SHTC1Sensor();
+      break;
 
     case AUTO_DETECT:
     {
@@ -290,7 +270,6 @@ bool SHTSensor::init(SHTSensorDriver *sensor)
           break;
         }
       }
-      // No sensor was auto detected
       if (!detected) {
         cleanup();
       }
@@ -325,7 +304,7 @@ bool SHTSensor::setI2cAddress(uint8_t newAddress)
 
 void SHTSensor::cleanup()
 {
-  if (mOwnSensor && mSensor) {
+  if (mSensor) {
     delete mSensor;
     mSensor = NULL;
   }
