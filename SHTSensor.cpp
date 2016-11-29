@@ -163,11 +163,12 @@ public:
 
 class SHT3xSensor : public SHTI2cSensor
 {
-public:
+private:
   static const uint16_t SHT3x_ACCURACY_HIGH    = 0x2c06;
   static const uint16_t SHT3x_ACCURACY_MEDIUM  = 0x2c0d;
   static const uint16_t SHT3x_ACCURACY_LOW     = 0x2c10;
 
+public:
   static const uint8_t SHT3x_I2C_ADDRESS_44 = 0x44;
   static const uint8_t SHT3x_I2C_ADDRESS_45 = 0x45;
 
