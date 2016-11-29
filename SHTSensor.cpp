@@ -198,20 +198,6 @@ public:
 
 
 //
-// class SHT3xAlt
-//
-
-class SHT3xAltSensor : public SHT3xSensor
-{
-public:
-  SHT3xAltSensor() : SHT3xSensor()
-  {
-    setI2cAddress(SHT3x_I2C_ADDRESS_45);
-  }
-};
-
-
-//
 // class SHT3xAnalogSensor
 //
 
@@ -252,7 +238,7 @@ bool SHTSensor::init()
       break;
 
     case SHT3X_ALT:
-      mSensor = new SHT3xAltSensor();
+      mSensor = new SHT3xSensor(SHT3xSensor::SHT3x_I2C_ADDRESS_45);
       break;
 
     case SHTW1:
