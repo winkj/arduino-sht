@@ -171,8 +171,8 @@ public:
   static const uint8_t SHT3x_I2C_ADDRESS_44 = 0x44;
   static const uint8_t SHT3x_I2C_ADDRESS_45 = 0x45;
 
-  SHT3xSensor()
-      : SHTI2cSensor(SHT3x_I2C_ADDRESS_44, SHT3x_ACCURACY_HIGH,
+  SHT3xSensor(uint8_t i2cAddress = SHT3x_I2C_ADDRESS_44)
+      : SHTI2cSensor(i2cAddress, SHT3x_ACCURACY_HIGH,
                      -45, 175, 65535, 100, 65535)
   {
   }
