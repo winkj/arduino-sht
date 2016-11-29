@@ -164,16 +164,16 @@ public:
 class SHT3xSensor : public SHTI2cSensor
 {
 private:
-  static const uint16_t SHT3x_ACCURACY_HIGH    = 0x2c06;
-  static const uint16_t SHT3x_ACCURACY_MEDIUM  = 0x2c0d;
-  static const uint16_t SHT3x_ACCURACY_LOW     = 0x2c10;
+  static const uint16_t SHT3X_ACCURACY_HIGH    = 0x2c06;
+  static const uint16_t SHT3X_ACCURACY_MEDIUM  = 0x2c0d;
+  static const uint16_t SHT3X_ACCURACY_LOW     = 0x2c10;
 
 public:
-  static const uint8_t SHT3x_I2C_ADDRESS_44 = 0x44;
-  static const uint8_t SHT3x_I2C_ADDRESS_45 = 0x45;
+  static const uint8_t SHT3X_I2C_ADDRESS_44 = 0x44;
+  static const uint8_t SHT3X_I2C_ADDRESS_45 = 0x45;
 
-  SHT3xSensor(uint8_t i2cAddress = SHT3x_I2C_ADDRESS_44)
-      : SHTI2cSensor(i2cAddress, SHT3x_ACCURACY_HIGH,
+  SHT3xSensor(uint8_t i2cAddress = SHT3X_I2C_ADDRESS_44)
+      : SHTI2cSensor(i2cAddress, SHT3X_ACCURACY_HIGH,
                      -45, 175, 65535, 100, 65535)
   {
   }
@@ -182,13 +182,13 @@ public:
   {
     switch (newAccuracy) {
       case SHTSensor::SHT_ACCURACY_HIGH:
-        mI2cCommand = SHT3x_ACCURACY_HIGH;
+        mI2cCommand = SHT3X_ACCURACY_HIGH;
         break;
       case SHTSensor::SHT_ACCURACY_MEDIUM:
-        mI2cCommand = SHT3x_ACCURACY_MEDIUM;
+        mI2cCommand = SHT3X_ACCURACY_MEDIUM;
         break;
       case SHTSensor::SHT_ACCURACY_LOW:
-        mI2cCommand = SHT3x_ACCURACY_LOW;
+        mI2cCommand = SHT3X_ACCURACY_LOW;
         break;
       default:
         return false;
@@ -239,7 +239,7 @@ bool SHTSensor::init()
       break;
 
     case SHT3X_ALT:
-      mSensor = new SHT3xSensor(SHT3xSensor::SHT3x_I2C_ADDRESS_45);
+      mSensor = new SHT3xSensor(SHT3xSensor::SHT3X_I2C_ADDRESS_45);
       break;
 
     case SHTW1:
