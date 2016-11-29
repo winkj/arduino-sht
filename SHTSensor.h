@@ -137,15 +137,6 @@ public:
    */
   bool setAccuracy(SHTAccuracy newAccuracy);
 
-  /**
-   * Set the i2c address the driver uses to communicate with the sensor,
-   * if supported by the driver
-   * Note: this will only cause the communication to address a different i2c
-   * device but not cause the sensor to change it's listening address.
-   * Returns true if the sensor address was changed
-   */
-  bool setI2cAddress(uint8_t newAddress);
-
 private:
   void cleanup();
 
@@ -167,14 +158,6 @@ public:
    * Returns false if the sensor does not support changing the accuracy
    */
   virtual bool setAccuracy(SHTSensor::SHTAccuracy newAccuracy) {
-    return false;
-  }
-
-  /**
-   * Set the i2c communication address.
-   * Returns false if the sensor driver does not support different addresses
-   */
-  virtual bool setI2cAddress(uint8_t newAddress) {
     return false;
   }
 
@@ -233,11 +216,6 @@ public:
   }
 
   virtual bool readSample();
-
-  virtual bool setI2cAddress(uint8_t i2cAddress) {
-    mI2cAddress = i2cAddress;
-    return true;
-  }
 
   uint8_t mI2cAddress;
   uint16_t mI2cCommand;

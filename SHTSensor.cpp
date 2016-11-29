@@ -284,13 +284,6 @@ bool SHTSensor::setAccuracy(SHTAccuracy newAccuracy)
   return mSensor->setAccuracy(newAccuracy);
 }
 
-bool SHTSensor::setI2cAddress(uint8_t newAddress)
-{
-  if (!mSensor)
-    return false;
-  return mSensor->setI2cAddress(newAddress);
-}
-
 void SHTSensor::cleanup()
 {
   if (mSensor) {
