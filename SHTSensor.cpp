@@ -168,6 +168,9 @@ public:
   static const uint16_t SHT3x_ACCURACY_MEDIUM  = 0x2c0d;
   static const uint16_t SHT3x_ACCURACY_LOW     = 0x2c10;
 
+  static const uint8_t SHT3x_I2C_ADDRESS_44 = 0x44;
+  static const uint8_t SHT3x_I2C_ADDRESS_45 = 0x45;
+
   SHT3xSensor()
       : SHTI2cSensor(SHT3x_I2C_ADDRESS_44, SHT3x_ACCURACY_HIGH,
                      -45, 175, 65535, 100, 65535)

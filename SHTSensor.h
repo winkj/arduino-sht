@@ -155,9 +155,6 @@ private:
   float mHumidity;
 };
 
-// I2c addresses used by the SHT3x-DIS
-const uint8_t SHT3x_I2C_ADDRESS_44 = 0x44;
-const uint8_t SHT3x_I2C_ADDRESS_45 = 0x45;
 
 /** Abstract class for a digital SHT Sensor driver */
 class SHTSensorDriver
