@@ -1,3 +1,5 @@
+# Important: this repository is deprecated - use https://github.com/Sensirion/arduino-sht instead!
+
 # arduino-sht
 Unofficial repository for Sensirion Humidity and temperature sensor support on Arduino
 
