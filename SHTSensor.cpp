@@ -53,7 +53,6 @@ bool SHTSensorDriver::readSample()
 
 const uint8_t SHTI2cSensor::CMD_SIZE            = 2;
 const uint8_t SHTI2cSensor::EXPECTED_DATA_SIZE  = 6;
-const uint8_t SHTI2cSensor::MAX_I2C_READ_TRIES  = 5;
 
 bool SHTI2cSensor::readFromI2c(uint8_t i2cAddress,
                                const uint8_t *i2cCommand,
@@ -73,14 +72,9 @@ bool SHTI2cSensor::readFromI2c(uint8_t i2cAddress,
 
   Wire.requestFrom(i2cAddress, dataLength);
 
-  // there should be no reason for this to not be ready, since we're using clock
-  // stretching mode, but just in case we'll try a few times
-  uint8_t tries = 1;
-  while (Wire.available() < dataLength) {
-    delay(1);
-    if (tries++ >= MAX_I2C_READ_TRIES) {
-      return false;
-    }
+  // check if the same number of bytes are received that are requested.
+  if (Wire.available() != dataLength) {
+    return false;
   }
 
   for (int i = 0; i < dataLength; ++i) {
