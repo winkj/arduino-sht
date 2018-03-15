@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, Sensirion AG <andreas.brauchli@sensirion.com>
+ *  Copyright (c) 2018, Sensirion AG <andreas.brauchli@sensirion.com>
  *  Copyright (c) 2015-2016, Johannes Winkelmann <jw@smts.ch>
  *  All rights reserved.
  *
