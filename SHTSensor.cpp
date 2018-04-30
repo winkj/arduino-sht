@@ -51,13 +51,14 @@ bool SHTSensorDriver::readSample()
 // class SHTI2cSensor
 //
 
-const uint8_t SHTI2cSensor::CMD_SIZE            = 2;
-const uint8_t SHTI2cSensor::EXPECTED_DATA_SIZE  = 6;
+const uint8_t SHTI2cSensor::CMD_SIZE             = 2;
+const uint8_t SHTI2cSensor::EXPECTED_DATA_SIZE   = 6;
 
 bool SHTI2cSensor::readFromI2c(uint8_t i2cAddress,
                                const uint8_t *i2cCommand,
                                uint8_t commandLength, uint8_t *data,
-                               uint8_t dataLength)
+                               uint8_t dataLength,
+                               uint8_t duration)
 {
   Wire.beginTransmission(i2cAddress);
   for (int i = 0; i < commandLength; ++i) {
@@ -69,6 +70,8 @@ bool SHTI2cSensor::readFromI2c(uint8_t i2cAddress,
   if (Wire.endTransmission(false) != 0) {
     return false;
   }
+
+  delay(duration);
 
   Wire.requestFrom(i2cAddress, dataLength);
 
@@ -113,7 +116,7 @@ bool SHTI2cSensor::readSample()
   cmd[1] = mI2cCommand & 0xff;
 
   if (!readFromI2c(mI2cAddress, cmd, CMD_SIZE, data,
-                   EXPECTED_DATA_SIZE)) {
+                   EXPECTED_DATA_SIZE, mDuration)) {
     return false;
   }
 
@@ -144,8 +147,8 @@ class SHTC1Sensor : public SHTI2cSensor
 {
 public:
     SHTC1Sensor()
-        // Using clock stretching, high precision, T first
-        : SHTI2cSensor(0x70, 0x7ca2, -45, 175, 65535, 100, 65535)
+        // clock stretching disabled, high precision, T first
+        : SHTI2cSensor(0x70, 0x7866, 15, -45, 175, 65535, 100, 65535)
     {
     }
 };
@@ -158,9 +161,13 @@ public:
 class SHT3xSensor : public SHTI2cSensor
 {
 private:
-  static const uint16_t SHT3X_ACCURACY_HIGH    = 0x2c06;
-  static const uint16_t SHT3X_ACCURACY_MEDIUM  = 0x2c0d;
-  static const uint16_t SHT3X_ACCURACY_LOW     = 0x2c10;
+  static const uint16_t SHT3X_ACCURACY_HIGH    = 0x2400;
+  static const uint16_t SHT3X_ACCURACY_MEDIUM  = 0x240b;
+  static const uint16_t SHT3X_ACCURACY_LOW     = 0x2416;
+
+  static const uint8_t SHT3X_ACCURACY_HIGH_DURATION   = 15;
+  static const uint8_t SHT3X_ACCURACY_MEDIUM_DURATION = 6;
+  static const uint8_t SHT3X_ACCURACY_LOW_DURATION    = 4;
 
 public:
   static const uint8_t SHT3X_I2C_ADDRESS_44 = 0x44;
@@ -168,6 +175,7 @@ public:
 
   SHT3xSensor(uint8_t i2cAddress = SHT3X_I2C_ADDRESS_44)
       : SHTI2cSensor(i2cAddress, SHT3X_ACCURACY_HIGH,
+                     SHT3X_ACCURACY_HIGH_DURATION,
                      -45, 175, 65535, 100, 65535)
   {
   }
@@ -177,12 +185,15 @@ public:
     switch (newAccuracy) {
       case SHTSensor::SHT_ACCURACY_HIGH:
         mI2cCommand = SHT3X_ACCURACY_HIGH;
+        mDuration = SHT3X_ACCURACY_HIGH_DURATION;
         break;
       case SHTSensor::SHT_ACCURACY_MEDIUM:
         mI2cCommand = SHT3X_ACCURACY_MEDIUM;
+        mDuration = SHT3X_ACCURACY_MEDIUM_DURATION;
         break;
       case SHTSensor::SHT_ACCURACY_LOW:
         mI2cCommand = SHT3X_ACCURACY_LOW;
+        mDuration = SHT3X_ACCURACY_LOW_DURATION;
         break;
       default:
         return false;
