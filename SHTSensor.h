@@ -202,11 +202,12 @@ public:
    * and the values `x' and `y' to convert the fixed-point humidity value
    * received by the sensor to a floating point value using the formula:
    * humidity = x * (rawHumidity / y)
+   * duration is the duration in milliseconds of one measurement
    */
-  SHTI2cSensor(uint8_t i2cAddress, uint16_t i2cCommand,
+  SHTI2cSensor(uint8_t i2cAddress, uint16_t i2cCommand, uint8_t duration,
                float a, float b, float c,
                float x, float y)
-      : mI2cAddress(i2cAddress), mI2cCommand(i2cCommand),
+      : mI2cAddress(i2cAddress), mI2cCommand(i2cCommand), mDuration(duration),
         mA(a), mB(b), mC(c), mX(x), mY(y)
   {
   }
@@ -219,6 +220,7 @@ public:
 
   uint8_t mI2cAddress;
   uint16_t mI2cCommand;
+  uint8_t mDuration;
   float mA;
   float mB;
   float mC;
@@ -230,7 +232,7 @@ private:
   static bool readFromI2c(uint8_t i2cAddress,
                           const uint8_t *i2cCommand,
                           uint8_t commandLength, uint8_t *data,
-                          uint8_t dataLength);
+                          uint8_t dataLength, uint8_t duration);
 };
 
 class SHT3xAnalogSensor
